@@ -16,4 +16,8 @@ export class SubredditService {
   getSubreddits(): Observable<Array<SubredditModel>> {
     return this.httpClient.get<Array<SubredditModel>>(this.BASE_URL);
   }
+
+  createSubreddit(subredditModel: SubredditModel) {
+    return this.httpClient.post<SubredditModel>(this.BASE_URL, subredditModel);
+  }
 }
