@@ -1,7 +1,7 @@
 import { HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
-import { catchError, switchMap } from 'rxjs/operators';
+import { catchError, filter, switchMap, take } from 'rxjs/operators';
 
 import { LoginResponse } from './auth/login/login-response.payload';
 import { AuthService } from './auth/shared/auth.service';
@@ -17,19 +17,21 @@ export class TokenInterceptor implements HttpInterceptor {
   constructor(public authService: AuthService) { }
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    const jwtToken = this.authService.getJwtToken();
-
-    if (jwtToken) {
-      req = this.addToken(req, jwtToken);
+    if (req.url.indexOf('refresh') !== -1 || req.url.indexOf('login') !== -1) {
+      return next.handle(req);
     }
 
-    return next.handle(req).pipe(catchError(error => {
-      if (error instanceof HttpErrorResponse && error.status === 403) {
-        return this.handleAuthErrors(req, next);
-      } else {
-        return throwError(error);
-      }
-    }));
+    const jwtToken = this.authService.getJwtToken();
+
+    return next.handle(this.addToken(req, jwtToken)).pipe(
+      catchError((error) => {
+        if (error instanceof HttpErrorResponse && error.status === 403) {
+          return this.handleAuthErrors(req, next);
+        } else {
+          return throwError(error);
+        }
+      })
+    );
   }
 
   private handleAuthErrors(req: HttpRequest<any>, next: HttpHandler) {
@@ -42,6 +44,14 @@ export class TokenInterceptor implements HttpInterceptor {
           this.isTokenRefreshing = false;
           this.refreshTokenSubject.next(refreshTokenResponse.authenticationToken);
           return next.handle(this.addToken(req, refreshTokenResponse.authenticationToken));
+        })
+      );
+    } else {
+      return this.refreshTokenSubject.pipe(
+        filter((result) => result !== null),
+        take(1),
+        switchMap((res) => {
+          return next.handle(this.addToken(req, this.authService.getJwtToken()));
         })
       );
     }

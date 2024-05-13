@@ -21,4 +21,13 @@ export class PostService {
   createPost(postPayload: CreatePostPayload): Observable<any> {
     return this.httpCliente.post(this.BASE_URL, postPayload);
   }
+
+  getPost(postId: number): Observable<any> {
+    return this.httpCliente.get<PostModel>(this.BASE_URL + '/' + postId);
+  }
+
+  getPostsByUser(username: string): Observable<Array<PostModel>> {
+    return this.httpCliente.get<Array<PostModel>>(this.BASE_URL,
+      { params: { username } });
+  }
 }

@@ -1,16 +1,19 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { EventEmitter, Injectable, Output } from '@angular/core';
 import { Observable, of, throwError } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 
+import { LoginRequestPayload } from '../login/login-request.payload';
 import { LoginResponse } from '../login/login-response.payload';
-import { LoginRequestPayload } from './../login/login-request.payload';
-import { SignupRequestPayload } from './../signup/signup-request.payload';
+import { SignupRequestPayload } from '../signup/signup-request.payload';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
+
+  @Output() loggedIn: EventEmitter<boolean> = new EventEmitter();
+  @Output() username: EventEmitter<string> = new EventEmitter();
 
   BASE_URL: string = 'http://localhost:8080/api/auth';
 
@@ -21,6 +24,7 @@ export class AuthService {
   }
 
   login(loginRequestPayload: LoginRequestPayload): Observable<Boolean> {
+    localStorage.removeItem('authenticationToken');
     return this.httpClient
       .post<LoginResponse>(`${this.BASE_URL}/login`, loginRequestPayload)
       .pipe(
@@ -68,5 +72,13 @@ export class AuthService {
 
   getExpirationTime() {
     return localStorage.getItem('expiresAt');
+  }
+
+  isLoggedIn(): boolean {
+    return this.getJwtToken() != null;
+  }
+
+  logout() {
+
   }
 }
