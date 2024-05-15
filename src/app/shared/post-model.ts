@@ -8,4 +8,6 @@ export interface PostModel {
   voteCount: number;
   commentCount: number;
   duration: string;
+  upVote: boolean;
+  downVote: boolean;
 }

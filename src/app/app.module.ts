@@ -24,6 +24,7 @@ import { VoteButtonComponent } from './shared/vote-button/vote-button.component'
 import { CreateSubredditComponent } from './subreddit/create-subreddit/create-subreddit.component';
 import { ListSubredditsComponent } from './subreddit/list-subreddits/list-subreddits.component';
 import { TokenInterceptor } from './token-interceptor';
+import { VoteComponent } from './shared/vote/vote.component';
 
 @NgModule({
   declarations: [
@@ -40,7 +41,8 @@ import { TokenInterceptor } from './token-interceptor';
     CreatePostComponent,
     ListSubredditsComponent,
     ViewPostComponent,
-    UserProfileComponent
+    UserProfileComponent,
+    VoteComponent
   ],
   imports: [
     BrowserModule,

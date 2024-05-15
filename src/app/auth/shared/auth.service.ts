@@ -12,10 +12,10 @@ import { SignupRequestPayload } from '../signup/signup-request.payload';
 })
 export class AuthService {
 
+  BASE_URL: string = 'http://localhost:8080/api/auth';
+
   @Output() loggedIn: EventEmitter<boolean> = new EventEmitter();
   @Output() username: EventEmitter<string> = new EventEmitter();
-
-  BASE_URL: string = 'http://localhost:8080/api/auth';
 
   constructor(private httpClient: HttpClient) { }
 
@@ -34,6 +34,8 @@ export class AuthService {
           localStorage.setItem('expiresAt', data.expiresAt.toString());
           localStorage.setItem('username', data.username);
 
+          this.loggedIn.emit(true);
+          this.username.emit(data.username);
           return true;
         }),
         catchError(err => {
@@ -79,6 +81,21 @@ export class AuthService {
   }
 
   logout() {
+    const refreshTokenPayload = {
+      refreshToken: this.getRefreshToken(),
+      username: this.getUserName()
+    };
 
+    this.httpClient.post(`${this.BASE_URL}/logout`, refreshTokenPayload, { responseType: 'text' })
+      .subscribe((data) => {
+        console.log(data);
+      }, (error) => {
+        throwError(error);
+      }
+      );
+    localStorage.removeItem('authenticationToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('expiresAt');
+    localStorage.removeItem('username');
   }
 }
